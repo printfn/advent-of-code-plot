@@ -44,6 +44,7 @@ function updateGraph() {
         console.log('now', 1608876296);
 
         const timeDivisor = 60/100;
+        const showRealData = true;
 
         let chartData = {
             type: 'bar',
@@ -95,6 +96,9 @@ function updateGraph() {
             },
             options: {
                 scales: {
+                    xAxes: [{
+                        stacked: true
+                    }],
                     yAxes: [{
                         ticks: {
                             //stepSize: 1,
@@ -171,40 +175,42 @@ function updateGraph() {
             }
         };
 
-        chartData.data.datasets = [];
-        chartData.data.labels = [];
+        if (showRealData) {
+            chartData.data.datasets = [];
+            chartData.data.labels = [];
 
-        let i = 0;
-        for (let memberId in leaderboardData.members) {
-            let member = leaderboardData.members[memberId];
-            let dataset = {
-                label: member.name,
-                data: [],
-                backgroundColor: [],
-                borderColor: [],
-                borderWidth: 1,
-                stack: member.name,
-                minBarLength: 2
-            };
-            for (let day = 1; day <= 31; ++day) {
-                for (let part of [1, 2]) {
-                    if (member.completion_day_level[day] && member.completion_day_level[day][part]) {
-                        let ts = member.completion_day_level[day][part].get_star_ts;
-                        let durationInSeconds = ts - startTimestamp - 86400 * parseInt(day);
-                        dataset.data.push(durationInSeconds / timeDivisor);
-                    } else {
-                        dataset.data.push(null);
-                    }
-                    dataset.backgroundColor.push(backgroundColors[i]);
-                    dataset.borderColor.push(borderColors[i]);
-                    if (i == 0) {
-                        chartData.data.labels.push(`Day ${day} Part ${part}`);
+            let i = 0;
+            for (let memberId in leaderboardData.members) {
+                let member = leaderboardData.members[memberId];
+                let dataset = {
+                    label: member.name,
+                    data: [],
+                    backgroundColor: [],
+                    borderColor: [],
+                    borderWidth: 1,
+                    stack: member.name,
+                    minBarLength: 2
+                };
+                for (let day = 1; day <= 31; ++day) {
+                    for (let part of [1, 2]) {
+                        if (member.completion_day_level[day] && member.completion_day_level[day][part]) {
+                            let ts = member.completion_day_level[day][part].get_star_ts;
+                            let durationInSeconds = ts - startTimestamp - 86400 * parseInt(day);
+                            dataset.data.push(durationInSeconds / timeDivisor);
+                        } else {
+                            dataset.data.push(null);
+                        }
+                        dataset.backgroundColor.push(backgroundColors[i]);
+                        dataset.borderColor.push(borderColors[i]);
+                        if (i == 0) {
+                            chartData.data.labels.push(`Day ${day} Part ${part}`);
+                        }
                     }
                 }
+                chartData.data.datasets.push(dataset);
+                console.log(member.name)
+                ++i;
             }
-            chartData.data.datasets.push(dataset);
-            console.log(member.name)
-            ++i;
         }
 
         let ctx = document.getElementById('chart');
