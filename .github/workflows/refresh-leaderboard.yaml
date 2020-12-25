@@ -19,7 +19,7 @@ jobs:
 
       - name: commit changes
         run: |
-          git pull origin
+          git pull origin main --verbose
           git config user.name gh-actions
           git config user.email gh-actions@github
           git commit -am "Update data.js"
