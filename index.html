@@ -1,0 +1,180 @@
+<html>
+<head>
+
+<title>Advent of Code Leaderboard Plot</title>
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.bundle.min.js"></script>
+<script>
+
+let backgroundColors = [
+    'rgba(255, 99, 132, 0.2)',
+    'rgba(54, 162, 235, 0.2)',
+    'rgba(255, 206, 86, 0.2)',
+    'rgba(75, 192, 192, 0.2)',
+    'rgba(153, 102, 255, 0.2)',
+    'rgba(255, 159, 64, 0.2)'
+];
+
+let borderColors = [
+    'rgba(255, 99, 132, 1)',
+    'rgba(54, 162, 235, 1)',
+    'rgba(255, 206, 86, 1)',
+    'rgba(75, 192, 192, 1)',
+    'rgba(153, 102, 255, 1)',
+    'rgba(255, 159, 64, 1)'
+];
+
+function updateGraph() {
+    try {
+        let leaderboardData = JSON.parse(document.getElementById('json').value);
+        console.log(leaderboardData);
+
+        let year = parseInt(leaderboardData.event);
+        let startTimestamp = 0;
+        for (let y = 1970; y <= year; ++y) {
+            let isLeap = y % 400 == 0 ? true : y % 100 == 0 ? false : y % 4 == 0;
+            console.log(y, isLeap);
+            startTimestamp += 86400 * (isLeap ? 366 : 365);
+        }
+        startTimestamp -= 86400 * 32;
+        startTimestamp += 3600 * 5;
+        console.log('startTimestamp', startTimestamp);
+        console.log('now', 1608876296);
+
+        let chartData = {
+            type: 'bar',
+            data: {
+                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+                datasets: [{
+                    label: 'Minutes Since Start',
+                    data: [12, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1,
+                    stack: 'first'
+                }, {
+                    label: 'Minutes Since Start',
+                    data: [22, 19, 3, 5, 2, 3],
+                    backgroundColor: [
+                        'rgba(255, 99, 132, 0.2)',
+                        'rgba(54, 162, 235, 0.2)',
+                        'rgba(255, 206, 86, 0.2)',
+                        'rgba(75, 192, 192, 0.2)',
+                        'rgba(153, 102, 255, 0.2)',
+                        'rgba(255, 159, 64, 0.2)'
+                    ],
+                    borderColor: [
+                        'rgba(255, 99, 132, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(153, 102, 255, 1)',
+                        'rgba(255, 159, 64, 1)'
+                    ],
+                    borderWidth: 1,
+                    stack: 'second'
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            //beginAtZero: true
+                        },
+                        stacked: true,
+                        //type: 'logarithmic'
+                    }]
+                }
+            }
+        };
+
+        chartData.data.datasets = [];
+        chartData.data.labels = [];
+
+        let i = 0;
+        for (let memberId in leaderboardData.members) {
+            let member = leaderboardData.members[memberId];
+            let dataset = {
+                label: member.name,
+                data: [],
+                backgroundColor: [],
+                borderColor: [],
+                borderWidth: 1,
+                stack: member.name
+            };
+            for (let day in member.completion_day_level) {
+                for (let part of [1, 2]) {
+                    let ts = member.completion_day_level[day][part].get_star_ts;
+                    dataset.data.push(ts - startTimestamp - 86400 * parseInt(day));
+                    dataset.backgroundColor.push(backgroundColors[i]);
+                    dataset.borderColor.push(borderColors[i]);
+                    if (i == 0) {
+                        chartData.data.labels.push(`Day ${day} Part ${part}`);
+                    }
+                }
+            }
+            chartData.data.datasets.push(dataset);
+            console.log(member.name)
+            ++i;
+        }
+
+        let ctx = document.getElementById('chart');
+        let myChart = new Chart(ctx, chartData);
+
+        document.getElementById('errors').innerText = "";
+    } catch (err) {
+        document.getElementById('errors').innerText = err;
+    }
+}
+
+window.onload = () => {
+    document.getElementById('json').addEventListener('change', updateGraph);
+    document.getElementById('json').addEventListener('keyup', updateGraph);
+    document.getElementById('json').addEventListener('paste', updateGraph);
+    updateGraph();
+}
+
+</script>
+
+<style>
+#wrap {
+    max-width: 800px;
+    background-color: #f3f3f3;
+    margin: auto;
+    padding: 10px;
+}
+body {
+    background-color: #f7f7f7;
+}
+textarea {
+    width: 100%;
+}
+</style>
+
+</head>
+<body>
+
+<div id="wrap">
+    <textarea id="json">{"members":{"225901":{"id":"225901","completion_day_level":{"4":{"1":{"get_star_ts":"1607219099"},"2":{"get_star_ts":"1607230299"}},"6":{"2":{"get_star_ts":"1607231247"},"1":{"get_star_ts":"1607231047"}},"1":{"1":{"get_star_ts":"1606825135"},"2":{"get_star_ts":"1606825183"}},"2":{"1":{"get_star_ts":"1607217004"},"2":{"get_star_ts":"1607217254"}},"3":{"2":{"get_star_ts":"1607218453"},"1":{"get_star_ts":"1607218043"}},"5":{"1":{"get_star_ts":"1607229175"},"2":{"get_star_ts":"1607229941"}}},"last_star_ts":"1607231247","local_score":14,"global_score":0,"name":"Rhys Davies","stars":12},"420711":{"last_star_ts":"1607936872","local_score":50,"completion_day_level":{"11":{"2":{"get_star_ts":"1607674031"},"1":{"get_star_ts":"1607671711"}},"6":{"2":{"get_star_ts":"1607231954"},"1":{"get_star_ts":"1607231855"}},"4":{"2":{"get_star_ts":"1607085511"},"1":{"get_star_ts":"1607071090"}},"14":{"2":{"get_star_ts":"1607936872"},"1":{"get_star_ts":"1607933511"}},"13":{"2":{"get_star_ts":"1607843597"},"1":{"get_star_ts":"1607839838"}},"1":{"2":{"get_star_ts":"1606817713"},"1":{"get_star_ts":"1606817175"}},"8":{"1":{"get_star_ts":"1607428072"},"2":{"get_star_ts":"1607431483"}},"2":{"1":{"get_star_ts":"1606887172"},"2":{"get_star_ts":"1606887453"}},"10":{"1":{"get_star_ts":"1607577723"},"2":{"get_star_ts":"1607583086"}},"9":{"2":{"get_star_ts":"1607576481"},"1":{"get_star_ts":"1607574553"}},"5":{"1":{"get_star_ts":"1607184997"},"2":{"get_star_ts":"1607185713"}},"3":{"2":{"get_star_ts":"1606988302"},"1":{"get_star_ts":"1606986986"}},"7":{"1":{"get_star_ts":"1607323202"},"2":{"get_star_ts":"1607324110"}},"12":{"1":{"get_star_ts":"1607836873"},"2":{"get_star_ts":"1607837743"}}},"id":"420711","name":"Jamie","stars":28,"global_score":0},"22105":{"global_score":0,"stars":50,"name":"printfn","completion_day_level":{"19":{"2":{"get_star_ts":"1608365456"},"1":{"get_star_ts":"1608360572"}},"18":{"2":{"get_star_ts":"1608283970"},"1":{"get_star_ts":"1608282736"}},"15":{"2":{"get_star_ts":"1608010763"},"1":{"get_star_ts":"1608009169"}},"12":{"2":{"get_star_ts":"1607756348"},"1":{"get_star_ts":"1607755740"}},"11":{"1":{"get_star_ts":"1607670211"},"2":{"get_star_ts":"1607671025"}},"23":{"2":{"get_star_ts":"1608702846"},"1":{"get_star_ts":"1608700564"}},"4":{"1":{"get_star_ts":"1607065548"},"2":{"get_star_ts":"1607066426"}},"6":{"2":{"get_star_ts":"1607231562"},"1":{"get_star_ts":"1607231287"}},"25":{"2":{"get_star_ts":"1608873180"},"1":{"get_star_ts":"1608873169"}},"1":{"2":{"get_star_ts":"1606805157"},"1":{"get_star_ts":"1606805081"}},"8":{"2":{"get_star_ts":"1607407937"},"1":{"get_star_ts":"1607407596"}},"17":{"2":{"get_star_ts":"1608184324"},"1":{"get_star_ts":"1608183533"}},"9":{"2":{"get_star_ts":"1607496144"},"1":{"get_star_ts":"1607495809"}},"21":{"1":{"get_star_ts":"1608533890"},"2":{"get_star_ts":"1608534373"}},"7":{"2":{"get_star_ts":"1607318873"},"1":{"get_star_ts":"1607317927"}},"3":{"2":{"get_star_ts":"1606985637"},"1":{"get_star_ts":"1606985401"}},"22":{"2":{"get_star_ts":"1608614668"},"1":{"get_star_ts":"1608613508"}},"20":{"1":{"get_star_ts":"1608444729"},"2":{"get_star_ts":"1608446246"}},"24":{"1":{"get_star_ts":"1608861205"},"2":{"get_star_ts":"1608861747"}},"14":{"2":{"get_star_ts":"1607923196"},"1":{"get_star_ts":"1607922723"}},"13":{"1":{"get_star_ts":"1607836055"},"2":{"get_star_ts":"1607837445"}},"2":{"2":{"get_star_ts":"1606885508"},"1":{"get_star_ts":"1606885392"}},"10":{"2":{"get_star_ts":"1607578636"},"1":{"get_star_ts":"1607576918"}},"16":{"1":{"get_star_ts":"1608095281"},"2":{"get_star_ts":"1608097299"}},"5":{"2":{"get_star_ts":"1607149021"},"1":{"get_star_ts":"1607148767"}}},"id":"22105","local_score":142,"last_star_ts":"1608873180"}},"event":"2020","owner_id":"225901"}</textarea>
+    <p id="errors"></p>
+    <canvas id="chart" width="800" height="600"></canvas>
+</div>
+
+</body>
+</html>
