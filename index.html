@@ -55,6 +55,7 @@ function durationToString(seconds) {
 
 const timeDivisor = 60/100;
 const showRealData = true;
+let offsets = {};
 
 function setUpGraph() {
     let chartData = {
@@ -131,12 +132,17 @@ function setUpGraph() {
             tooltips: {
                 callbacks: {
                     label: function(tooltipItem, data) {
-                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
+                        const dataset = data.datasets[tooltipItem.datasetIndex];
+                        const datapoint = dataset.data[tooltipItem.index];
+                        const seconds = Math.floor(datapoint * timeDivisor);
+                        let label = dataset.label;
 
                         if (label) {
                             label += ': ';
-                            let seconds = Math.floor(parseFloat(tooltipItem.yLabel) * timeDivisor);
+                            const date = new Date((seconds + offsets[tooltipItem.index]) * 1000);
+                            const dateString = date.toLocaleString(undefined, { timeZoneName: 'short' });
                             label += durationToString(seconds);
+                            label += ` (completed ${dateString})`;
                         }
 
                         return label;
@@ -160,13 +166,11 @@ function updateGraph() {
         let startTimestamp = 0;
         for (let y = 1970; y <= year; ++y) {
             let isLeap = y % 400 == 0 ? true : y % 100 == 0 ? false : y % 4 == 0;
-            console.log(y, isLeap);
             startTimestamp += 86400 * (isLeap ? 366 : 365);
         }
         startTimestamp -= 86400 * 32;
         startTimestamp += 3600 * 5;
         console.log('startTimestamp', startTimestamp);
-        console.log('now', 1608876296);
 
         let chartData = window.myChart;
 
@@ -189,8 +193,10 @@ function updateGraph() {
                 for (let day = 1; day <= 25; ++day) {
                     for (let part of [1, 2]) {
                         if (member.completion_day_level[day] && member.completion_day_level[day][part]) {
-                            let ts = member.completion_day_level[day][part].get_star_ts;
-                            let durationInSeconds = ts - startTimestamp - 86400 * parseInt(day);
+                            const ts = member.completion_day_level[day][part].get_star_ts;
+                            const offset = startTimestamp + 86400 * parseInt(day);
+                            offsets[(day-1)*2+part-1] = offset;
+                            let durationInSeconds = ts - offset;
                             dataset.data.push(durationInSeconds / timeDivisor);
                         } else {
                             dataset.data.push(null);
