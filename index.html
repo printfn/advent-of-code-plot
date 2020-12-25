@@ -95,11 +95,15 @@ function updateGraph() {
                 scales: {
                     yAxes: [{
                         ticks: {
-                            stepSize: 86400,
+                            stepSize: 1,
                             //beginAtZero: true
                         },
                         stacked: true,
-                    }]
+                        scaleLabel: {
+                            display: true,
+                            labelString: 'Days'
+                        }
+                    }],
                 },
                 tooltips: {
                     callbacks: {
@@ -110,7 +114,7 @@ function updateGraph() {
                                 label += ': ';
                             }
 
-                            let seconds = parseInt(tooltipItem.yLabel);
+                            let seconds = Math.floor(parseFloat(tooltipItem.yLabel) * 86400);
                             let minutes = Math.floor(seconds / 60);
                             seconds %= 60;
                             let hours = Math.floor(minutes / 60);
@@ -155,7 +159,8 @@ function updateGraph() {
             for (let day in member.completion_day_level) {
                 for (let part of [1, 2]) {
                     let ts = member.completion_day_level[day][part].get_star_ts;
-                    dataset.data.push(ts - startTimestamp - 86400 * parseInt(day));
+                    let durationInSeconds = ts - startTimestamp - 86400 * parseInt(day);
+                    dataset.data.push(durationInSeconds / 86400);
                     dataset.backgroundColor.push(backgroundColors[i]);
                     dataset.borderColor.push(borderColors[i]);
                     if (i == 0) {
