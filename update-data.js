@@ -23,7 +23,7 @@ const req = https.request({
     }
 
     res.on('data', data => {
-        let content = `loadData(${data});`
+        let content = `loadData(${JSON.stringify(JSON.parse(data))});`
         fs.writeFile('data.js', content, err => {
             if (err) {
                 console.error(err);
