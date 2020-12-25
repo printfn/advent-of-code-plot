@@ -30,6 +30,27 @@ function loadData(data) {
     document.getElementById('json').innerText = JSON.stringify(data);
 }
 
+function durationToString(seconds) {
+    let minutes = Math.floor(seconds / 60);
+    seconds %= 60;
+    let hours = Math.floor(minutes / 60);
+    minutes %= 60;
+    let days = Math.floor(hours / 24);
+    hours %= 24;
+
+    let str = '';
+
+    if (days > 0) {
+        str += days + ' day(s), ';
+    }
+    if (hours > 0) {
+        str += hours.toString().padStart(2, '0') + ':';
+    }
+    str += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+
+    return str;
+}
+
 const timeDivisor = 60/100;
 const showRealData = true;
 
@@ -98,32 +119,11 @@ function setUpGraph() {
                             if (value.toString().startsWith('9')) return null;
 
                             let seconds = Math.floor(parseFloat(value) * timeDivisor);
-                            let minutes = Math.floor(seconds / 60);
-                            seconds %= 60;
-                            let hours = Math.floor(minutes / 60);
-                            minutes %= 60;
-                            let days = Math.floor(hours / 24);
-                            hours %= 24;
-
-                            let str = '';
-
-                            if (days > 0) {
-                                str += days + ' day(s), ';
-                            }
-                            if (hours > 0) {
-                                str += hours.toString().padStart(2, '0') + ':';
-                            }
-                            str += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-
-                            return str;
+                            return durationToString(seconds);
                         }
                     },
                     stacked: true,
-                    type: 'logarithmic',
-                    scaleLabel: {
-                        display: true,
-                        labelString: 'Duration',
-                    }
+                    type: 'logarithmic'
                 }],
             },
             tooltips: {
@@ -133,29 +133,10 @@ function setUpGraph() {
 
                         if (label) {
                             label += ': ';
+                            let seconds = Math.floor(parseFloat(tooltipItem.yLabel) * timeDivisor);
+                            label += durationToString(seconds);
                         }
 
-                        let seconds = Math.floor(parseFloat(tooltipItem.yLabel) * timeDivisor);
-                        let minutes = Math.floor(seconds / 60);
-                        seconds %= 60;
-                        let hours = Math.floor(minutes / 60);
-                        minutes %= 60;
-                        let days = Math.floor(hours / 24);
-                        hours %= 24;
-
-                        let duration = '';
-                        if (days > 0) {
-                            duration += days + ' day(s), ';
-                        }
-                        if (hours > 0) {
-                            duration += hours.toString().padStart(2, '0') + ':';
-                        }
-                        // if (minutes > 0) {
-                        //     duration += minutes + ':';
-                        // }
-                        duration += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0')
-
-                        label += duration;
                         return label;
                     }
                 }
