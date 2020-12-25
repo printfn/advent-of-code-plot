@@ -1,3 +1,4 @@
+const stringify = require('./json-stable-stringify');
 const fs = require('fs');
 const https = require('https');
 
@@ -23,7 +24,7 @@ const req = https.request({
     }
 
     res.on('data', data => {
-        let content = `loadData(${JSON.stringify(JSON.parse(data))});`
+        let content = `loadData(${stringify(JSON.parse(data))});`
         fs.writeFile('data.js', content, err => {
             if (err) {
                 console.error(err);
