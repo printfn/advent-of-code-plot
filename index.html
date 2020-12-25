@@ -154,7 +154,8 @@ function updateGraph() {
                 backgroundColor: [],
                 borderColor: [],
                 borderWidth: 1,
-                stack: member.name
+                stack: member.name,
+                minBarLength: 2
             };
             for (let day in member.completion_day_level) {
                 for (let part of [1, 2]) {
