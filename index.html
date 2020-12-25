@@ -40,8 +40,10 @@ function durationToString(seconds) {
 
     let str = '';
 
-    if (days > 0) {
-        str += days + ' day(s), ';
+    if (days == 1) {
+        str += '1 day, ';
+    } else if (days >= 2) {
+        str += days + ' days, ';
     }
     if (hours > 0) {
         str += hours.toString().padStart(2, '0') + ':';
