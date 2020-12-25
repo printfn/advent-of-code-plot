@@ -30,6 +30,144 @@ function loadData(data) {
     document.getElementById('json').innerText = JSON.stringify(data);
 }
 
+const timeDivisor = 60/100;
+const showRealData = true;
+
+function setUpGraph() {
+    let chartData = {
+        type: 'bar',
+        data: {
+            labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
+            datasets: [{
+                label: 'Minutes Since Start',
+                data: [12, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1,
+                stack: 'first'
+            }, {
+                label: 'Minutes Since Start',
+                data: [22, 19, 3, 5, 2, 3],
+                backgroundColor: [
+                    'rgba(255, 99, 132, 0.2)',
+                    'rgba(54, 162, 235, 0.2)',
+                    'rgba(255, 206, 86, 0.2)',
+                    'rgba(75, 192, 192, 0.2)',
+                    'rgba(153, 102, 255, 0.2)',
+                    'rgba(255, 159, 64, 0.2)'
+                ],
+                borderColor: [
+                    'rgba(255, 99, 132, 1)',
+                    'rgba(54, 162, 235, 1)',
+                    'rgba(255, 206, 86, 1)',
+                    'rgba(75, 192, 192, 1)',
+                    'rgba(153, 102, 255, 1)',
+                    'rgba(255, 159, 64, 1)'
+                ],
+                borderWidth: 1,
+                stack: 'second'
+            }]
+        },
+        options: {
+            scales: {
+                xAxes: [{
+                    stacked: true
+                }],
+                yAxes: [{
+                    ticks: {
+                        //stepSize: 1,
+                        //beginAtZero: true
+                        callback: function(value, index, values) {
+                            if (value.toString().startsWith('5')) return null;
+                            if (value.toString().startsWith('7')) return null;
+                            if (value.toString().startsWith('8')) return null;
+                            if (value.toString().startsWith('9')) return null;
+
+                            let seconds = Math.floor(parseFloat(value) * timeDivisor);
+                            let minutes = Math.floor(seconds / 60);
+                            seconds %= 60;
+                            let hours = Math.floor(minutes / 60);
+                            minutes %= 60;
+                            let days = Math.floor(hours / 24);
+                            hours %= 24;
+
+                            let str = '';
+
+                            if (days > 0) {
+                                str += days + ' day(s), ';
+                            }
+                            if (hours > 0) {
+                                str += hours.toString().padStart(2, '0') + ':';
+                            }
+                            str += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
+
+                            return str;
+                        }
+                    },
+                    stacked: true,
+                    type: 'logarithmic',
+                    scaleLabel: {
+                        display: true,
+                        labelString: 'Duration',
+                    }
+                }],
+            },
+            tooltips: {
+                callbacks: {
+                    label: function(tooltipItem, data) {
+                        var label = data.datasets[tooltipItem.datasetIndex].label || '';
+
+                        if (label) {
+                            label += ': ';
+                        }
+
+                        let seconds = Math.floor(parseFloat(tooltipItem.yLabel) * timeDivisor);
+                        let minutes = Math.floor(seconds / 60);
+                        seconds %= 60;
+                        let hours = Math.floor(minutes / 60);
+                        minutes %= 60;
+                        let days = Math.floor(hours / 24);
+                        hours %= 24;
+
+                        let duration = '';
+                        if (days > 0) {
+                            duration += days + ' day(s), ';
+                        }
+                        if (hours > 0) {
+                            duration += hours.toString().padStart(2, '0') + ':';
+                        }
+                        // if (minutes > 0) {
+                        //     duration += minutes + ':';
+                        // }
+                        duration += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0')
+
+                        label += duration;
+                        return label;
+                    }
+                }
+            }
+        }
+    };
+
+    let ctx = document.getElementById('chart');
+    let myChart = new Chart(ctx, chartData);
+    window.myChart = myChart;
+}
+
 function updateGraph() {
     try {
         let leaderboardData = JSON.parse(document.getElementById('json').value);
@@ -47,137 +185,7 @@ function updateGraph() {
         console.log('startTimestamp', startTimestamp);
         console.log('now', 1608876296);
 
-        const timeDivisor = 60/100;
-        const showRealData = true;
-
-        let chartData = {
-            type: 'bar',
-            data: {
-                labels: ['Red', 'Blue', 'Yellow', 'Green', 'Purple', 'Orange'],
-                datasets: [{
-                    label: 'Minutes Since Start',
-                    data: [12, 19, 3, 5, 2, 3],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1,
-                    stack: 'first'
-                }, {
-                    label: 'Minutes Since Start',
-                    data: [22, 19, 3, 5, 2, 3],
-                    backgroundColor: [
-                        'rgba(255, 99, 132, 0.2)',
-                        'rgba(54, 162, 235, 0.2)',
-                        'rgba(255, 206, 86, 0.2)',
-                        'rgba(75, 192, 192, 0.2)',
-                        'rgba(153, 102, 255, 0.2)',
-                        'rgba(255, 159, 64, 0.2)'
-                    ],
-                    borderColor: [
-                        'rgba(255, 99, 132, 1)',
-                        'rgba(54, 162, 235, 1)',
-                        'rgba(255, 206, 86, 1)',
-                        'rgba(75, 192, 192, 1)',
-                        'rgba(153, 102, 255, 1)',
-                        'rgba(255, 159, 64, 1)'
-                    ],
-                    borderWidth: 1,
-                    stack: 'second'
-                }]
-            },
-            options: {
-                scales: {
-                    xAxes: [{
-                        stacked: true
-                    }],
-                    yAxes: [{
-                        ticks: {
-                            //stepSize: 1,
-                            //beginAtZero: true
-                            callback: function(value, index, values) {
-                                if (value.toString().startsWith('5')) return null;
-                                if (value.toString().startsWith('7')) return null;
-                                if (value.toString().startsWith('8')) return null;
-                                if (value.toString().startsWith('9')) return null;
-
-                                let seconds = Math.floor(parseFloat(value) * timeDivisor);
-                                let minutes = Math.floor(seconds / 60);
-                                seconds %= 60;
-                                let hours = Math.floor(minutes / 60);
-                                minutes %= 60;
-                                let days = Math.floor(hours / 24);
-                                hours %= 24;
-
-                                let str = '';
-
-                                if (days > 0) {
-                                    str += days + ' day(s), ';
-                                }
-                                if (hours > 0) {
-                                    str += hours.toString().padStart(2, '0') + ':';
-                                }
-                                str += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0');
-
-                                return str;
-                            }
-                        },
-                        stacked: true,
-                        type: 'logarithmic',
-                        scaleLabel: {
-                            display: true,
-                            labelString: 'Duration',
-                        }
-                    }],
-                },
-                tooltips: {
-                    callbacks: {
-                        label: function(tooltipItem, data) {
-                            var label = data.datasets[tooltipItem.datasetIndex].label || '';
-
-                            if (label) {
-                                label += ': ';
-                            }
-
-                            let seconds = Math.floor(parseFloat(tooltipItem.yLabel));
-                            let minutes = Math.floor(seconds / 60);
-                            seconds %= 60;
-                            let hours = Math.floor(minutes / 60);
-                            minutes %= 60;
-                            let days = Math.floor(hours / 24);
-                            hours %= 24;
-
-                            let duration = '';
-                            if (days > 0) {
-                                duration += days + ' day(s), ';
-                            }
-                            if (hours > 0) {
-                                duration += hours.toString().padStart(2, '0') + ':';
-                            }
-                            // if (minutes > 0) {
-                            //     duration += minutes + ':';
-                            // }
-                            duration += minutes.toString().padStart(2, '0') + ':' + seconds.toString().padStart(2, '0')
-
-                            label += duration;
-                            return label;
-                        }
-                    }
-                }
-            }
-        };
+        let chartData = window.myChart;
 
         if (showRealData) {
             chartData.data.datasets = [];
@@ -195,7 +203,7 @@ function updateGraph() {
                     stack: member.name,
                     minBarLength: 2
                 };
-                for (let day = 1; day <= 31; ++day) {
+                for (let day = 1; day <= 25; ++day) {
                     for (let part of [1, 2]) {
                         if (member.completion_day_level[day] && member.completion_day_level[day][part]) {
                             let ts = member.completion_day_level[day][part].get_star_ts;
@@ -217,8 +225,7 @@ function updateGraph() {
             }
         }
 
-        let ctx = document.getElementById('chart');
-        let myChart = new Chart(ctx, chartData);
+        window.myChart.update();
 
         document.getElementById('errors').innerText = "";
     } catch (err) {
@@ -227,6 +234,7 @@ function updateGraph() {
 }
 
 window.onload = () => {
+    setUpGraph();
     document.getElementById('json').addEventListener('change', updateGraph);
     document.getElementById('json').addEventListener('keyup', updateGraph);
     document.getElementById('json').addEventListener('paste', updateGraph);
